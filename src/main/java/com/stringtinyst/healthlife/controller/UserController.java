@@ -6,10 +6,7 @@ import com.stringtinyst.healthlife.service.UserService;
 import com.stringtinyst.healthlife.utils.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,16 +36,39 @@ public class UserController {
     }
     @PostMapping("/login")
     public Result loginUser(@RequestBody User user) {
-        User loginUser = userService.loginUser(user);
+        String loginUser = userService.loginUser(user);
+        log.info("尝试登录: email={}, passwordHash={}", user.getEmail(), user.getPasswordHash());
         if (loginUser == null) {
             log.error("用户登录失败");
-            return Result.error("用户登录失败,邮箱或密码错误");
+            return Result.error("用户登录失败,邮箱或密码错误或从未注册");
         }
         log.info("用户登录成功");
+        user.setUserID(loginUser);
         Map<String,Object> claims = new HashMap<>();
-        claims.put("userID",loginUser.getUserID());
-        claims.put("email",loginUser.getEmail());
+        claims.put("userID",user.getUserID());
+        claims.put("email",user.getEmail());
         String token = JwtUtils.generateJwt(claims);
         return Result.success(token);
     }
+    @GetMapping("/{userID}")
+    public Result getUser(@PathVariable String userID) {
+        User userInfo = userService.getUser(userID);
+        if (userInfo == null) {
+            log.error("用户不存在");
+            return Result.error("用户不存在");
+        }
+        log.info("获取用户信息成功");
+        return Result.success(userInfo);
+    }
+    @PutMapping("/{userID}")
+    public Result updateUser(@RequestBody User user) {
+        boolean flag = userService.updateUser(user);
+        if (!flag) {
+            log.error("用户更新失败: {}",user);
+            return Result.error("用户更新失败");
+        }
+        log.info("用户更新成功");
+        return Result.success(user);
+    }
+
 }

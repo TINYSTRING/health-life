@@ -31,10 +31,18 @@ public class JwtUtils {
      * @return JWT第二部分负载 payload 中存储的内容
      */
     public static Claims parseJWT(String jwt){
-        Claims claims = Jwts.parser()
-                .setSigningKey(signKey)
-                .parseClaimsJws(jwt)
-                .getBody();
-        return claims;
+        if (jwt == null || jwt.isEmpty()) {
+            throw new IllegalArgumentException("token 不能为空");
+        }
+
+        try {
+            return Jwts.parser()
+                    .setSigningKey(signKey)
+                    .parseClaimsJws(jwt)
+                    .getBody();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("无效的 token", e);
+        }
     }
+
 }

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.stringtinyst.healthlife.mapper.ExerMapper">
+    <select id="list" resultType="com.stringtinyst.healthlife.pojo.Exer">
+        select *
+        from exerciseitem
+        <!--where标签可以自动判断是否生成where子句,自动去除条件前面多余的and和or-->
+        <where>
+            UserID = #{userID}
+            <if test="startDate != null and endDate != null" >
+                RecordDate between #{startDate} and #{endDate}
+            </if>
+            <if test="exerciseType != null">
+                and ExerciseType = #{exerciseType}
+            </if>
+        </where>
+    </select>
+
+</mapper>
